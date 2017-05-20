@@ -29,9 +29,46 @@ If the ArchLinux image doesn't boot up properly, remove the `quiet` flag to the 
 ERROR: '/dev/disk/by-label' device did not show up after 30 seconds...  
 ```
 
-*I resolved it by renaming the volume name like `Arch_201706`. I think unetbootin don't know this, but some other tools might do.*  
+*I resolved it by renaming the volume name like `ARCH_201706`. I think unetbootin don't know this, but some other tools might do.*  
 
 ## Create partitions  
+
+To double check disk info (partitions, free space, etc.):  
+```bash
+gdisk -l /dev/sda
+```
+
+Enter `gdisk` command mode to create a swap partition:  
+```bash
+gdisk /dev/sda
+n
++2GB # Last sector of swap
+8200 # GUID for Linux swap
+w
+```
+
+Format it:
+```bash
+mkswap -L "Linux Swap" /dev/sda6 # Assuming the newly created swap is sda6
+```
+
+And verify if it works:
+```bash
+swapon /dev/sda5
+free -m
+```
+
+Now create the partition that is to be mounted at `/`：
+```bash
+gdisk /dev/sda
+n
+w
+```
+
+Format it with `ext4` filesystem:
+```bash
+mkfs.ext4 -L "Arch Linux" /dev/sda7 # Assuming the partition is at sda7
+```
 
 ## Set up Internet connection  
 
