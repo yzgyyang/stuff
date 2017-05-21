@@ -72,8 +72,65 @@ mkfs.ext4 -L "Arch Linux" /dev/sda7 # Assuming the partition is at sda7
 
 ## Set up Internet connection  
 
-## Install base and necessary tools  
+## Install base system  
 
-## Install bootloader  
+Now that you have internet connection, you can mount `/` and install the base system.
+
+```bash
+mount /dev/sda7 # Assuming the partition is at sda7
+pacstrap /mnt base
+```
+
+## EFI configuration
+
+Locate the EFI partition number:
+```bash
+gdisk -l /dev/sda
+```
+
+Mount the EFI partition:
+```bash
+mkdir -p /mnt/boot/efi
+mount /dev/sda2 /mnt/boot/efi # Assuming EFI partition is sda2
+```
+
+Generate fstab:
+```bash
+genfstab -p /mnt >> /mnt/etc/fstab
+```
+
+Now you can see the contents of fstab:
+```bash
+cat /mnt/etc/fstab
+```
+
+## Configure the new system
+
+First we should chroot into arch installation:
+```bash
+arch-chroot /mnt
+```
+
+Do some configurations:
+```bash
+passwd root # Change root password
+ln -s /usr/share/zoneinfo/Canada/Eastern # Change default time zone
+mkinitcpio -p linux # Generate initial RAM disk
+
+pacman -Syu grub efibootmgr # Install a bootloader (I use grub)
+grub-mkconfig -o /boot/grub/grub.cfg # Generate grub config file
+grub-install /dev/sda # Install grub to the hard disk
+ls -l /boot/efi/EFI/arch # Confirm installation
+```
+
+*A complete list of time zone configuration is available [here](https://packages.debian.org/sid/all/tzdata/filelist).*
+
+## Install a desktop environment
+
+
+## Install system and development tools  
+
+
+## Dual-boot  
 
 {Work in Progress}
