@@ -1,14 +1,14 @@
 # BeagleBone FreeBSD Tinderbox Log
 
-# Goal
+## Goal
 
-Started as a side project on my first weeks of interning at The FreeBSD Foundation, it finally met our expetation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status and run 7*24 in our Kitchener office.
+Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expetation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status and run 24/7 in our Kitchener office.
 
-# Prerequisites
+## Prerequisites
 
 - A working installation of FreeBSD
-- BeagleBone Green with a 4GB micro-SD card, a serial cable and a compatible wireless USB adapter
-- An addressible LED RGB strip, this project uses [Sparkfun APA102](https://www.sparkfun.com/products/14015)
+- BeagleBone Green with a 4GB micro-SD card, a serial cable, and a compatible wireless USB adapter
+- An addressable LED RGB strip, this project uses [Sparkfun APA102](https://www.sparkfun.com/products/14015)
 
 # Steps
 
@@ -22,7 +22,7 @@ To get started, you can download an image from the [FreeBSD Snapshot](https://do
 FreeBSD-12.0-CURRENT-arm-armv6-BEAGLEBONE-20170519-r318502.img.xz
 ```
 
-then extract it to get the `*.img` image.
+then extract it to get the `.img` image.
 
 You can always choose to build FreeBSD from source code if you want to experience the latest changes for the support of BeagleBone and are comfortable with the process. [Crochet](https://github.com/freebsd/crochet) is the tool to use, and you can find a detailed guide on GitHub.
 
