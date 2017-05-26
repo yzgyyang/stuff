@@ -116,6 +116,10 @@ to:
 PermitRootLogin yes
 ```
 
+then, restart ssh daemon like:
+```bash
+$ /etc/rc.d/sshd restart
+```
 and you will be able to login as root via ssh.
 
 ## Test the GPIO on board
