@@ -8,7 +8,7 @@ Started as a side project during my first few weeks of interning at The FreeBSD 
 
 - A working installation of FreeBSD
 - BeagleBone Green with a 4GB micro-SD card, a serial cable and Internet connection
-- An addressable LED RGB strip, this project uses [Sparkfun APA102](https://www.sparkfun.com/products/14015)
+- An addressable LED RGB strip. This project uses an APA102 LED strip from [Sparkfun](https://www.sparkfun.com/products/14015)
 
 # Steps
 
@@ -16,7 +16,7 @@ Started as a side project during my first few weeks of interning at The FreeBSD 
 
 ### 1. Build or download a FreeBSD image
 
-To get started, you can download an image from the [FreeBSD Snapshot](https://download.freebsd.org/ftp/snapshots/ISO-IMAGES/) site with filename labeled as BeagleBone, in this case we download:
+To get started, you can download an image from the [FreeBSD Snapshot](https://download.freebsd.org/ftp/snapshots/ISO-IMAGES/) site with filename labeled as BeagleBone. In this case we download:
 
 ```
 FreeBSD-12.0-CURRENT-arm-armv6-BEAGLEBONE-20170519-r318502.img.xz
@@ -34,33 +34,33 @@ You can always choose to build FreeBSD from source code if you want to experienc
 
 ### 2. Install the image
 
-[dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&apropos=0&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
+The [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&apropos=0&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
 
-We specify if (input file), of (output file) and bs (block size of copying). These arguments should be changed to match the actual file and device name.
+We specify `if` (input file), `of` (output file) and `bs` (copy block size). These arguments should be changed to match the actual file and device name.
 
 ```bash
 $ dd if=FreeBSD-BeagleBone.img of=/dev/da0 bs=8m
 ```
 
-*Specifying a block size is not necessary, but the default setting may result in very slow operation.*
+*Specifying a block size is not necessary, but the default setting will result in very slow operation.*
 
 If you are not sure of which device it is, simply run:
 ```bash
 $ tail /var/log/messages
 ```
-right after inserting the micro-SD or:
+right after inserting the micro-SD, or:
 ```bash
 $ sudo camcontrol devlist
 ```
 anytime to see the corresponding device name.
 
-After the operation finished, you can insert the micro-SD card into BeagleBone.
+After the operation finishes you can insert the micro-SD card into the BeagleBone.
 
 ## Boot the BeagleBone Green
 
 ### 1. Connect the serial cable
 
-A serial cable might not be necessary as you can wait until it boots and try to ssh to it (the system configuration might prevent you from sshing as root though). But since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something go wrong.
+A serial cable might not be necessary as you can wait until it boots and try to ssh to it (the system configuration might prevent you from sshing as root though). But since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something goes wrong.
 
 The serial console of BeagleBone Green is exposed on a 6-pin header. Connect the USB to TTL cable to BeagleBone and computer, then open a terminal window and execute the following:
 
@@ -78,7 +78,7 @@ The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, a
 
 The boot switch is just above the micro-SD slot.
 
-After booting, log in as root (default password is root as well).
+After booting, log in as root (the default password is root as well).
 
 *Tip: Making a Beaglebone Black always boot from the micro-SD  
 The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
@@ -95,7 +95,7 @@ $ gpart set -a active -i 1 mmcsd1
 
 The system may refuse to proceed on some commands if the system clock is wrong.
 
-In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to /etc/rc.conf:
+In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to /etc/rc.conf:
 
 ```
 ntpd_enable="YES"
@@ -132,7 +132,7 @@ First let's take a look at Beaglebone Green's pin map:
 
 ![BeagleBone Green Pin Map](https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/PINMAP_IO.png)
 
-Now we connect a LED and a 200Ω resistor using jump wires.
+Now we connect a LED and a 200Ω resistor using jumper wires.
 
 ![](https://cdn-learn.adafruit.com/assets/assets/000/009/108/large1024/beaglebone_fritzing.png?1396883299)
 
@@ -168,7 +168,7 @@ You can try blinking the LED by writing a bash script with a simple loop.
 
 Awesome! GPIO is working well with BeagleBone, it's time to start using the addressible LED strip.
 
-The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface, however, at this moment FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a walkaround.s
+The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface, however, at this moment FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a walkaround.
 
 ### 1. Wire LED strip to the BeagleBone
 
