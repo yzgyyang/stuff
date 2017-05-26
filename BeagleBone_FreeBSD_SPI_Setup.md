@@ -7,7 +7,7 @@ Started as a side project during my first few weeks of interning at The FreeBSD 
 ## Prerequisites
 
 - A working installation of FreeBSD
-- BeagleBone Green with a 4GB micro-SD card, a serial cable, and a compatible wireless USB adapter
+- BeagleBone Green with a 4GB micro-SD card, a serial cable and Internet connection
 - An addressable LED RGB strip, this project uses [Sparkfun APA102](https://www.sparkfun.com/products/14015)
 
 # Steps
@@ -22,7 +22,13 @@ To get started, you can download an image from the [FreeBSD Snapshot](https://do
 FreeBSD-12.0-CURRENT-arm-armv6-BEAGLEBONE-20170519-r318502.img.xz
 ```
 
-then extract it to get the `.img` image.
+then extract it:
+
+```bash
+$ unxz FreeBSD-12.0-CURRENT-arm-armv6-BEAGLEBONE-20170519-r318502.img.xz
+```
+
+to get the `.img` image.
 
 You can always choose to build FreeBSD from source code if you want to experience the latest changes for the support of BeagleBone and are comfortable with the process. [Crochet](https://github.com/freebsd/crochet) is the tool to use, and you can find a detailed guide on GitHub.
 
@@ -37,6 +43,12 @@ $ dd if=FreeBSD-BeagleBone.img of=/dev/da7 bs=8m
 ```
 
 *Specifying a block size is not necessary, but the default setting may result in very slow operation.*
+
+If you are not sure of which device it is, simply run:
+```bash
+$ ls /dev | grep da
+```
+with and without the micro-SD being inserted, so it is easier to be identified.
 
 After the operation finished, you can insert the micro-SD card into BeagleBone.
 
@@ -58,12 +70,14 @@ We use the [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utili
 
 The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, the apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
 
+![](https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/10201002703.jpg)
+
 The boot switch is just above the micro-SD slot.
 
 After booting, log in as root (default password is root as well).
 
-*Tip: Making a Beaglebone Black always boot from the Micro-SD  
-The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the Micro-SD:*
+*Tip: Making a Beaglebone Black always boot from the micro-SD  
+The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
 ```bash
 $ gpart unset -a active -i 1 mmcsd1
 ```
@@ -72,6 +86,8 @@ $ gpart unset -a active -i 1 mmcsd1
 $ gpart set -a active -i 1 mmcsd1
 ```
 *Alternatively, you can copy the FreeBSD image to eMMC so no pressing the button is needed.*
+
+### 3. System clock
 
 ## Test the GPIO on board
 
@@ -121,8 +137,6 @@ Awesome! GPIO is working well with BeagleBone, it's time to start using the addr
 
 The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface, however, at this moment FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a walkaround.s
 
-We use Python and the `fbsd_gpio` python bindings for the code. You may want to install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
-
 ### 1. Wire LED strip to the BeagleBone
 
 ![](https://cdn.sparkfun.com//assets/parts/1/1/8/0/8/14015-03.jpg)
@@ -131,12 +145,25 @@ We use Python and the `fbsd_gpio` python bindings for the code. You may want to 
 
 ### 2. Write SPI bit banging functions
 
+We use Python and the `fbsd_gpio` python bindings for the code. Install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
+
+```bash
+pkg install python py27-pip
+pip install cffi fbsd_gpio
+```
+
+*You may encounter an error when using pip which will give an error like:*
+```
+unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
+```
+**
+
 Import the library and create a controller:
 ```python
 from fbsd_gpio import GpioController
 gpioc = GpioController(0) # Using gpio controller unit 0 (/dev/gpioc0)
 ```
-
+https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/10201002703.jpg
 Set which pins we are using:
 ```python
 SCLK = 2 # CI (Blue)
