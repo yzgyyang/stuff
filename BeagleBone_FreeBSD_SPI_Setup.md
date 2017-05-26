@@ -39,16 +39,20 @@ You can always choose to build FreeBSD from source code if you want to experienc
 We specify if (input file), of (output file) and bs (block size of copying). These arguments should be changed to match the actual file and device name.
 
 ```bash
-$ dd if=FreeBSD-BeagleBone.img of=/dev/da7 bs=8m
+$ dd if=FreeBSD-BeagleBone.img of=/dev/da0 bs=8m
 ```
 
 *Specifying a block size is not necessary, but the default setting may result in very slow operation.*
 
 If you are not sure of which device it is, simply run:
 ```bash
-$ ls /dev | grep da
+$ tail /var/log/messages
 ```
-with and without the micro-SD being inserted, so it is easier to be identified.
+right after inserting the micro-SD or:
+```bash
+$ sudo camcontrol devlist
+```
+anytime to see the corresponding device name.
 
 After the operation finished, you can insert the micro-SD card into BeagleBone.
 
@@ -177,15 +181,18 @@ GND -> DGND
 We use Python and the `fbsd_gpio` python bindings for the code. Install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
 ```bash
-pkg install python py27-pip
-pip install cffi fbsd_gpio
+$ pkg install python py27-pip
+$ pip install --user cffi fbsd_gpio
 ```
 
 *You may encounter an error when using pip which will give an error like:*
 ```
 unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
 ```
-*This is because*
+*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we just change all references in /usr/local/lib/python2.7/_sysconfigdata.py for now as a walkaround:*
+```bash
+$ sed -i '' 's/\/nxb-bin\/usr\/bin\/cc/\/usr\/bin\/cc/g' /usr/local/lib/python2.7/_sysconfigdata.py
+```
 
 Import the library and create a controller:
 ```python
