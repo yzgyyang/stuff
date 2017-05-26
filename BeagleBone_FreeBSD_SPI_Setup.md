@@ -34,6 +34,8 @@ You can always choose to build FreeBSD from source code if you want to experienc
 
 ### 2. Install the image
 
+Insert the micro-SD card to the computer.
+
 [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&apropos=0&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
 
 We specify if (input file), of (output file) and bs (block size of copying). These arguments should be changed to match the actual file and device name.
@@ -62,7 +64,13 @@ After the operation finished, you can insert the micro-SD card into BeagleBone.
 
 A serial cable might not be necessary as you can wait until it boots and try to ssh to it (the system configuration might prevent you from sshing as root though). But since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something go wrong.
 
-The serial console of BeagleBone Green is exposed on a 6-pin header. Connect the USB to TTL cable to BeagleBone and computer, then open a terminal window and execute the following:
+![Serial Header](bbg_img/serial_header.jpg)
+
+The serial console of BeagleBone Green is exposed on a 6-pin header.
+
+![Serial Connected](bbg_img/serial_connected.jpg)
+
+Connect the USB to TTL cable to BeagleBone and computer, then open a terminal window and execute the following:
 
 ```bash
 $ sudo cu -s 115200 -l /dev/ttyU0 # Or appropriate tty device
@@ -74,13 +82,14 @@ We use the [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utili
 
 The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, the apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
 
-![](https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/10201002703.jpg)
+![BeagleBone Green Layout](bbg_img/bbg_layout.jpg)
+(image from http://wiki.seeed.cc/BeagleBone_Green/)
 
 The boot switch is just above the micro-SD slot.
 
 After booting, log in as root (default password is root as well).
 
-*Tip: Making a Beaglebone Black always boot from the micro-SD  
+*Tip: Making a BeagleBone Black always boot from the micro-SD  
 The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
 ```bash
 $ gpart unset -a active -i 1 mmcsd1
@@ -130,11 +139,13 @@ Let us start from mastering the control of an external LED.
 
 First let's take a look at Beaglebone Green's pin map:
 
-![BeagleBone Green Pin Map](https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/PINMAP_IO.png)
+![BeagleBone Green Pin Map](bbg_img/bbg_pinmap.jpg)
+(image from http://wiki.seeed.cc/BeagleBone_Green/)
 
 Now we connect a LED and a 200Ω resistor using jump wires.
 
-![](https://cdn-learn.adafruit.com/assets/assets/000/009/108/large1024/beaglebone_fritzing.png?1396883299)
+![Single LED Wiring](bbg_img/led_wiring.jpg)
+(image from https://learn.adafruit.com/blinking-an-led-with-beaglebone-black/wiring)
 
 The top two connections on the BeagleBone expansion header are both GND. The other lead is connected to a pin of your choice.
 
@@ -162,6 +173,8 @@ Now we have set the logical value of pin 3 to be 1, and the LED is on! To turn i
 $ gpioctl -f /dev/gpioc0 3 0 # Assuming pin 3 is the one used
 ```
 
+![LED Turned on](bbg_img/led_up.jpg)
+
 You can try blinking the LED by writing a bash script with a simple loop.
 
 ## SPI bit banging
@@ -172,12 +185,13 @@ The LED RGB strip we got is packed with 60 APA102s and can be controlled with a 
 
 ### 1. Wire LED strip to the BeagleBone
 
-![](https://cdn.sparkfun.com//assets/parts/1/1/8/0/8/14015-03.jpg)
+![](bbg_img/apa102_layout.jpg)
+(image from https://www.sparkfun.com/products/14015)
 
-Using the pin map, we connect:
-VCC -> SYS_5V
-CI -> GPIO of your choice
-DI -> GPIO of your choice
+Using the pin map, we connect:  
+VCC -> SYS_5V  
+CI -> GPIO of your choice  
+DI -> GPIO of your choice  
 GND -> DGND
 
 ### 2. Write SPI bit banging functions
@@ -240,7 +254,8 @@ def spi_write(buf):
 
 Now we've set up the SPI functions and ready to send SPI data, but what to send in order to light up any LEDs we want? Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf), we are able to find out the data format:
 
-![](https://cpldcpu.files.wordpress.com/2014/08/programming.png)
+![APA102 Data Format](bbg_img/apa102_format.jpg)
+(image from https://cdn-shop.adafruit.com/datasheets/APA102.pdf)
 
 Each update consists of a start frame of 32 zeroes, 32 bits for every LED and an end frame of 32 ones. So our send function will most likely to work as follows:
 
@@ -411,7 +426,17 @@ And the LEDs should be able to blink at an interval of 0.5s.
 
 ## Add some final touches
 
-We cut the strip to parts and stick them inside a picture frame. Looking good!
+We cut the strip to parts and stick them inside a picture frame.
+
+![](bbg_img/finish_1.jpg)
+
+![](bbg_img/finish_2.jpg)
+
+![](bbg_img/finish_3.jpg)
+
+![](bbg_img/finish.gif)
+
+Looking good!
 
 ## Further reading
 
