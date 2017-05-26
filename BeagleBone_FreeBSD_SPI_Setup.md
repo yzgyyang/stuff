@@ -83,7 +83,7 @@ First let's take a look at Beaglebone Green's pin map:
 
 ![BeagleBone Green Pin Map](https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/PINMAP_IO.png)
 
-Now we connect a LED and a 200Ω resistOr using jump wires.
+Now we connect a LED and a 200Ω resistor using jump wires.
 
 ![](https://cdn-learn.adafruit.com/assets/assets/000/009/108/large1024/beaglebone_fritzing.png?1396883299)
 
@@ -93,7 +93,7 @@ The top two connections on the BeagleBone expansion header are both GND. The oth
 
 No programming is required at this moment, as FreeBSD provides us with the  [gpioctl(8)](https://www.freebsd.org/cgi/man.cgi?query=gpioctl&sektion=8) utility which could be used to list available pins and manage GPIO pins from userland.
 
-First let's list all the available pins defined by device /dev/gpioc0:
+Let's list all the available pins defined by device /dev/gpioc0:
 ```bash
 $ gpioctl -f /dev/gpioc0 -l
 ```
@@ -124,6 +124,8 @@ The LED RGB strip we got is packed with 60 APA102s and can be controlled with a 
 We use Python and the `fbsd_gpio` python bindings for the code. You may want to install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
 ### 1. Wire LED strip to the BeagleBone
+
+![](https://cdn.sparkfun.com//assets/parts/1/1/8/0/8/14015-03.jpg)
 
 
 
@@ -224,17 +226,121 @@ This is how data will look like:
 }
 ```
 
-So that each time we fetch this data and iterate through `data["jobs"]`, we are able to get the status from `color` attribute.
+So that each time we fetch this data and iterate through `data["jobs"]`, we are able to get the status from `color` attribute and store them in a dictionary called `status`.
 
 *The Jenkins API manual can be found [here](https://ci.freebsd.org/api/).*
 
 ### 2. Light up the LEDs
 
+Recall the APA102 data format, we write some predefined data frames:
+```python
+# Variables
+BRT = 224 + 16 # Brightness, 0~31 decimal
 
+# Predefined data frames
+START_FRAME = [0, 0, 0, 0]
+END_FRAME = [255, 255, 255, 255]
+BLUE_LED_FRAME = [BRT, 1, 0, 0]
+GREEN_LED_FRAME = [BRT, 0, 1, 0]
+RED_LED_FRAME = [BRT, 0, 0, 1]
+YELLOW_LED_FRAME = [BRT, 0, 1, 1]
+OFF_LED_FRAME = [224, 0, 0, 0]
+```
+
+and some send functions:
+```python
+def led_send_start():
+    spi_write(START_FRAME)
+
+
+def led_send_end():
+    spi_write(END_FRAME)
+
+
+def led_send(status):
+    if status in ["blue", "blue_anime"]:
+        spi_write(GREEN_LED_FRAME)
+    elif status in ["red", "red_anime"]:
+        spi_write(RED_LED_FRAME)
+    elif status in ["dne"]:
+        spi_write(OFF_LED_FRAME)
+    else:
+        spi_write(YELLOW_LED_FRAME)
+
+
+def led_send_all(jobs):
+    led_send_start()
+    for job in jobs:
+        led_send(job["status"])
+    led_send_end()
+```
+
+so that once we updated the `status` dictionary, we are able to use `led_send(status)` to update the display:
+
+```python
+if __name__ == "__main__":
+    spi_init()
+    while True:
+        status = ... # Fetch the data
+        led_send_all(status) # Update
+        time.sleep(10) # or any other interval
+```
 
 ### 3. Let them blink!
 
+Now the display works really well with the static states of the job. However, we notice that the `blue_anime` and `red_anime` colours in Jenkins, which indicate a project is in the process of building thus should be blinking, are treating as static status as well.
 
+How to blink the LEDs while keeping their current status? We add a `blink_flag` boolean inside the loop, reverse it each time, and decide if we should turn the lights off based on that.
+
+Add the flag to the LED updating loop:
+```python
+blink_flag = False
+while True:
+    status = ... # Fetch the data
+    blink_flag = not blink_flag
+    led_send_all(status, blink_flag) # Update
+    time.sleep(10) # or any other interval
+```
+
+and reflect changes in the send function:
+```python
+def led_send_all(jobs, blink_flag):
+    led_send_start()
+    for job in jobs:
+        if "anime" in job["status"]:
+            if blink_flag:
+                led_send(job["status"])
+            else:
+                led_send("dne")
+        else:
+            led_send(job["status"])
+    led_send_end()
+```
+
+We should consider splitting the data fetching and the LED updating process, since blinking requires updating the LEDs every 0.5s but fetching data should be every 20s or even longer. This could be achieved by simply adding a nested loop (for example, 40 led updates, 1 data updates, loop), but I chose to use threading so both jobs will not affect each other if one gets stuck.
+
+Move the LED updating process into a controller class and run it separately:
+```python
+import threading
+class Led_controller(threading.Thread):
+    def run(self):
+        blink_flag = False
+        while True:
+            blink_flag = not blink_flag
+            led_send_all(status, blink_flag)
+            time.sleep(0.5)
+
+if __name__ == "__main__":
+    spi_init()
+    led_controller = Led_controller()
+    led_controller.start()
+
+    while True:
+        status = ... # Fetch the data
+        time.sleep(10) # or any other interval
+```
+
+And the LEDs should be able to blink at an interval of 0.5s.
 
 ## Add some final touches
 
