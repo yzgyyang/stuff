@@ -87,7 +87,32 @@ $ gpart set -a active -i 1 mmcsd1
 ```
 *Alternatively, you can copy the FreeBSD image to eMMC so no pressing the button is needed.*
 
-### 3. System clock
+### 3. Sync system clock
+
+The system may refuse to proceed on some commands if the system clock is wrong.
+
+In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to /etc/rc.conf:
+
+```
+ntpd_enable="YES"
+ntpdate_enable="YES"
+```
+
+Then read through /etc/ntp.conf. It's pretty well documented so it should be obvious what to set.
+
+### 4. Enable root login via ssh
+
+Open /etc/ssh/sshd_config and change this line:
+```
+#PermitRootLogin no
+```
+
+to:
+```
+PermitRootLogin yes
+```
+
+and you will be able to login as root via ssh.
 
 ## Test the GPIO on board
 
@@ -141,7 +166,11 @@ The LED RGB strip we got is packed with 60 APA102s and can be controlled with a 
 
 ![](https://cdn.sparkfun.com//assets/parts/1/1/8/0/8/14015-03.jpg)
 
-
+Using the pin map, we connect:
+VCC -> SYS_5V
+CI -> GPIO of your choice
+DI -> GPIO of your choice
+GND -> DGND
 
 ### 2. Write SPI bit banging functions
 
@@ -156,14 +185,14 @@ pip install cffi fbsd_gpio
 ```
 unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
 ```
-**
+*This is because*
 
 Import the library and create a controller:
 ```python
 from fbsd_gpio import GpioController
 gpioc = GpioController(0) # Using gpio controller unit 0 (/dev/gpioc0)
 ```
-https://raw.githubusercontent.com/SeeedDocument/BeagleBone_Green/master/images/10201002703.jpg
+
 Set which pins we are using:
 ```python
 SCLK = 2 # CI (Blue)
@@ -173,7 +202,7 @@ MOSI = 3 # DI (Green)
 SCLK: Serial Clock (output from master)  
 MOSI: Master Output Slave Input (data output from master), or DI from LED*
 
-Provide SPI init and write functions:
+Provide SPI init and write functions (It's better to use bitwise operators when working with bits):
 ```python
 def spi_init():
     gpioc.pin_output(SCLK)
@@ -183,9 +212,9 @@ def spi_init():
 
 
 def spi_write_byte(b):
-    for i in xrange(8):
+    for i in xrange(7, -1, -1):
         gpioc.pin_set(SCLK, 0)
-        gpioc.pin_set(MOSI, int(format(b, "08b")[i]))
+        gpioc.pin_set(MOSI, (b >> i) & 1)
         gpioc.pin_set(SCLK, 1)
 
 
