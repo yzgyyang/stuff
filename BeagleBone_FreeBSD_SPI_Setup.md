@@ -1,8 +1,12 @@
-# BeagleBone FreeBSD Tinderbox Log
+# Building a Physical FreeBSD Build Status Dashboard
 
-## Goal
+## Introduction
 
-Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expetation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status and run 24/7 in our Kitchener office.
+FreeBSD now has a number of Jenkins CI jobs to build and test FreeBSD on various architectures, and the newly implemented [Tinderbox](https://ci.freebsd.org/tinderbox/) presents a high-level, simple dashboard to the real-time [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status.
+
+![Tinderbox Screenshot](bbg_img/tinderbox.jpg)
+
+This display is so useful that we want a physical version in our office to easier monitor the build status. Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expectation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status, and is running 24/7 in our Kitchener office, proudly served on FreeBSD on a BeagleBone Green.
 
 ## Prerequisites
 
@@ -68,13 +72,29 @@ The serial console of BeagleBone Green is exposed on a 6-pin header.
 
 ![Serial Connected](bbg_img/serial_connected.jpg)
 
-Connect the USB to TTL cable to BeagleBone and computer, then open a terminal window and execute the following:
+We use the built-in [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility for serial communications. `cu` can only access the /var/spool/lock directory via user `uucp` and group `dialer`. Use the dialer group to control who has access to the modem or remote systems by adding user accounts to dialer using [pw(8)](https://www.freebsd.org/cgi/man.cgi?query=pw&sektion=8):
 
 ```bash
-$ sudo cu -s 115200 -l /dev/ttyU0 # Or appropriate tty device
+$ sudo pw groupmod dialer -m guangyuan # Use your own username
 ```
 
-We use the [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility on FreeBSD and specify the line speed of 115200 baud. You won't see any output yet.
+Then log out and log in again to make the above change live.
+
+Connect the USB to TTL cable to BeagleBone and computer, then run the `cu` utility and specify the line speed of 115200 baud.
+
+```bash
+$ cu -s 115200 -l /dev/cuaU0 # Or appropriate tty device
+```
+
+You won't see any output yet.
+
+*Using `sudo` to use `cu` is not a good practice, instead you should add the user to the `dialer` group as above stated, or grant everyone's access as an alternative by running:*
+
+```bash
+$ chmod 4511 /usr/bin/cu
+```
+
+For more info about serial communications, see [FreeBSD Serial Communications](https://www.freebsd.org/doc/faq/serial.html).
 
 ### 2. Boot up and log in
 
@@ -193,6 +213,8 @@ DI -> GPIO of your choice
 GND -> DGND
 
 ### 2. Write SPI bit banging functions
+
+*There is a SPI bit banging abstraction in the `fbsd_gpio` package used below but has not been documented yet. You can use that abstraction and skip this step, or you can still choose to follow it as a good learning practice.*
 
 We use Python and the `fbsd_gpio` python bindings for the code. Install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
