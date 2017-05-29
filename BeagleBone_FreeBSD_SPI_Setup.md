@@ -2,7 +2,7 @@
 
 ## Introduction
 
-FreeBSD now has a number of continuous integration jobs on Jenkins CI to build and test FreeBSD on various architectures, and the newly implemented [Tinderbox](https://ci.freebsd.org/tinderbox/) presents a high-level, simple dashboard to the real-time [FreeBSD CI](https://ci.freebsd.org/) build status.
+FreeBSD now has a number of continuous integration jobs on Jenkins CI to build and test FreeBSD on various architectures, and the newly implemented [Tinderbox View](https://ci.freebsd.org/tinderbox/) presents a high-level, simple dashboard to the real-time [FreeBSD CI](https://ci.freebsd.org/) build status.
 
 ![Tinderbox Screenshot](bbg_img/tinderbox.jpg)
 
