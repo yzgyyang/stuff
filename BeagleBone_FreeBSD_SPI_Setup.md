@@ -100,7 +100,7 @@ For more info about serial communications, see [FreeBSD Serial Communications](h
 
 The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, then apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
 
-![BeagleBone Green Layout](bbg_img/bbg_layout.jpg)
+![BeagleBone Green Layout](bbg_img/bbg_layout.jpg)  
 (image from http://wiki.seeed.cc/BeagleBone_Green/)
 
 The boot switch is just above the micro-SD slot.
@@ -157,12 +157,12 @@ Let us start from mastering the control of an external LED.
 
 First let's take a look at Beaglebone Green's pin map:
 
-![BeagleBone Green Pin Map](bbg_img/bbg_pinmap.jpg)
+![BeagleBone Green Pin Map](bbg_img/bbg_pinmap.jpg)  
 (image from http://wiki.seeed.cc/BeagleBone_Green/)
 
 Now we connect a LED and a 200Ω resistor using jumper wires.
 
-![Single LED Wiring](bbg_img/led_wiring.jpg)
+![Single LED Wiring](bbg_img/led_wiring.jpg)  
 (image from https://learn.adafruit.com/blinking-an-led-with-beaglebone-black/wiring)
 
 The top two connections on the BeagleBone expansion header are both GND. The other lead is connected to a pin of your choice.
@@ -203,7 +203,7 @@ The LED RGB strip we got is packed with 60 APA102s and can be controlled with a 
 
 ### 1. Wire LED strip to the BeagleBone
 
-![](bbg_img/apa102_layout.jpg)
+![](bbg_img/apa102_layout.jpg)  
 (image from https://www.sparkfun.com/products/14015)
 
 Using the pin map, we connect:  
@@ -212,9 +212,7 @@ CI -> GPIO of your choice
 DI -> GPIO of your choice  
 GND -> DGND
 
-### 2. Write SPI bit banging functions
-
-*There is a SPI bit banging abstraction in the `fbsd_gpio` package used below but has not been documented yet. You can use that abstraction and skip this step, or you can still choose to follow it as a good learning practice.*
+### 2. Install Python development environment
 
 We use Python and the `fbsd_gpio` python bindings for the code. Install Python and `pip` first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
@@ -227,10 +225,14 @@ $ pip install --user cffi fbsd_gpio
 ```
 unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
 ```
-*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we just change all references in `/usr/local/lib/python2.7/_sysconfigdata.py` for now as a workaround:*
+*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we could just change all references in `/usr/local/lib/python2.7/_sysconfigdata.py` for now as a workaround:*
 ```bash
 $ sed -i '' 's/\/nxb-bin\/usr\/bin\/cc/\/usr\/bin\/cc/g' /usr/local/lib/python2.7/_sysconfigdata.py
 ```
+
+### 3. Write SPI bit banging functions
+
+*There is a SPI bit banging abstraction in the `fbsd_gpio` package used below but has not been documented yet. You can use that abstraction and skip this step, or you can still choose to follow it as a good learning practice.*
 
 Import the library and create a controller:
 ```python
@@ -270,11 +272,11 @@ def spi_write(buf):
 
 *A complete description of `fbsd_gpio` can be found in the [fbsd_gpio documentation](https://pypi.python.org/pypi/fbsd_gpio/0.4.0) on PyPI.*
 
-### 3. Work with APA102 LEDs
+### 4. Work with APA102 LEDs
 
 Now we've set up the SPI functions and we're ready to send SPI data, but what to send in order to light up the LEDs we want? Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf) to find out the data format:
 
-![APA102 Data Format](bbg_img/apa102_format.jpg)
+![APA102 Data Format](bbg_img/apa102_format.jpg)  
 (image from https://cdn-shop.adafruit.com/datasheets/APA102.pdf)
 
 Each update consists of a start frame of 32 zeroes, 32 bits for every LED, and an end frame of 32 ones. So our send function will most likely to work as follows:
@@ -475,4 +477,4 @@ Official BeagleBone Green Document: [BeagleBone Green](http://wiki.seeed.cc/Beag
 
 ## Thanks
 
-Ed, Siva
+I would like to thank my supervisor Ed Maste for his guidance and support on my work. I would also like to thank Siva Mahadevan, my colleague and friend, for the useful help and suggestions.
