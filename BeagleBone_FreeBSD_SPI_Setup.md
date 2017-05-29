@@ -2,11 +2,11 @@
 
 ## Introduction
 
-FreeBSD now has a number of Jenkins CI jobs to build and test FreeBSD on various architectures, and the newly implemented [Tinderbox](https://ci.freebsd.org/tinderbox/) presents a high-level, simple dashboard to the real-time [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status.
+FreeBSD now has a number of continuous integration jobs on Jenkins CI to build and test FreeBSD on various architectures, and the newly implemented [Tinderbox](https://ci.freebsd.org/tinderbox/) presents a high-level, simple dashboard to the real-time [FreeBSD CI](https://ci.freebsd.org/) build status.
 
 ![Tinderbox Screenshot](bbg_img/tinderbox.jpg)
 
-This display is so useful that we want a physical version in our office to easier monitor the build status. Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expectation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status, and is running 24/7 in our Kitchener office, proudly served on FreeBSD on a BeagleBone Green.
+This display is so useful that we wanted a physical version in our office to monitor the build status more easily. Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expectation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status, and is running 24/7 in our Kitchener office, proudly served on FreeBSD on a BeagleBone Green.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ You can always choose to build FreeBSD from source code if you want to experienc
 
 ### 2. Install the image
 
-The [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&apropos=0&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
+The [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
 
 We specify `if` (input file), `of` (output file) and `bs` (copy block size). These arguments should be changed to match the actual file and device name.
 
@@ -56,15 +56,15 @@ right after inserting the micro-SD, or:
 ```bash
 $ sudo camcontrol devlist
 ```
-anytime to see the corresponding device name.
+to see the corresponding device name.
 
-After the operation finishes you can insert the micro-SD card into the BeagleBone.
+After the operation finishes, you can insert the micro-SD card into the BeagleBone.
 
 ## Boot the BeagleBone Green
 
 ### 1. Connect the serial cable
 
-A serial cable might not be necessary as you can wait until it boots and try to ssh to it (the system configuration might prevent you from sshing as root though). But since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something goes wrong.
+A serial cable might not be necessary as you can wait until it boots and try to `ssh` to it (the system configuration might prevent you from logging in as root with `ssh` though). However, since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something goes wrong.
 
 ![Serial Header](bbg_img/serial_header.jpg)
 
@@ -98,14 +98,14 @@ For more info about serial communications, see [FreeBSD Serial Communications](h
 
 ### 2. Boot up and log in
 
-The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, the apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
+The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, then apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
 
 ![BeagleBone Green Layout](bbg_img/bbg_layout.jpg)
 (image from http://wiki.seeed.cc/BeagleBone_Green/)
 
 The boot switch is just above the micro-SD slot.
 
-After booting, log in as root (the default password is root as well).
+After booting, log in as root (the default password is "root" as well).
 
 *Tip: Making a BeagleBone Black always boot from the micro-SD  
 The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
@@ -122,18 +122,18 @@ $ gpart set -a active -i 1 mmcsd1
 
 The system may refuse to proceed on some commands if the system clock is wrong.
 
-In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to /etc/rc.conf:
+In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to `/etc/rc.conf`:
 
 ```
 ntpd_enable="YES"
 ntpdate_enable="YES"
 ```
 
-Then read through /etc/ntp.conf. It's pretty well documented so it should be obvious what to set.
+Then read through `/etc/ntp.conf`. It's pretty well documented so it should be obvious what to set.
 
 ### 4. Enable root login via ssh
 
-Open /etc/ssh/sshd_config and change this line:
+Open `/etc/ssh/sshd_config` and change this line:
 ```
 #PermitRootLogin no
 ```
@@ -143,11 +143,11 @@ to:
 PermitRootLogin yes
 ```
 
-then, restart ssh daemon like:
+then, restart the `ssh` daemon:
 ```bash
 $ /etc/rc.d/sshd restart
 ```
-and you will be able to login as root via ssh.
+and you will be able to login as root via `ssh`.
 
 ## Test the GPIO on board
 
@@ -169,9 +169,9 @@ The top two connections on the BeagleBone expansion header are both GND. The oth
 
 ### 2. Send test signals
 
-No programming is required at this moment, as FreeBSD provides us with the  [gpioctl(8)](https://www.freebsd.org/cgi/man.cgi?query=gpioctl&sektion=8) utility which could be used to list available pins and manage GPIO pins from userland.
+No programming is required at this moment, as FreeBSD provides us with the [gpioctl(8)](https://www.freebsd.org/cgi/man.cgi?query=gpioctl&sektion=8) utility which could be used to list available pins and manage GPIO pins from userland.
 
-Let's list all the available pins defined by device /dev/gpioc0:
+Let's list all the available pins defined by device `/dev/gpioc0`:
 ```bash
 $ gpioctl -f /dev/gpioc0 -l
 ```
@@ -199,7 +199,7 @@ You can try blinking the LED by writing a bash script with a simple loop.
 
 Awesome! GPIO is working well with BeagleBone, it's time to start using the addressible LED strip.
 
-The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface, however, at this moment FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a walkaround.
+The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface. However, at this moment, FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a workaround.
 
 ### 1. Wire LED strip to the BeagleBone
 
@@ -216,18 +216,18 @@ GND -> DGND
 
 *There is a SPI bit banging abstraction in the `fbsd_gpio` package used below but has not been documented yet. You can use that abstraction and skip this step, or you can still choose to follow it as a good learning practice.*
 
-We use Python and the `fbsd_gpio` python bindings for the code. Install Python and pip first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
+We use Python and the `fbsd_gpio` python bindings for the code. Install Python and `pip` first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
 ```bash
 $ pkg install python py27-pip
 $ pip install --user cffi fbsd_gpio
 ```
 
-*You may encounter an error when using pip which will give an error like:*
+*You may encounter an error when using `pip` which will give an error like:*
 ```
 unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
 ```
-*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we just change all references in /usr/local/lib/python2.7/_sysconfigdata.py for now as a walkaround:*
+*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we just change all references in `/usr/local/lib/python2.7/_sysconfigdata.py` for now as a workaround:*
 ```bash
 $ sed -i '' 's/\/nxb-bin\/usr\/bin\/cc/\/usr\/bin\/cc/g' /usr/local/lib/python2.7/_sysconfigdata.py
 ```
@@ -247,7 +247,7 @@ MOSI = 3 # DI (Green)
 SCLK: Serial Clock (output from master)  
 MOSI: Master Output Slave Input (data output from master), or DI from LED*
 
-Provide SPI init and write functions (It's better to use bitwise operators when working with bits):
+Provide SPI init and write functions (it's better to use bitwise operators when working with bits):
 ```python
 def spi_init():
     gpioc.pin_output(SCLK)
@@ -268,16 +268,16 @@ def spi_write(buf):
         spi_write_byte(i)
 ```
 
-*A complete description of `fbsd_gpio` can be found [here](https://pypi.python.org/pypi/fbsd_gpio/0.4.0).*
+*A complete description of `fbsd_gpio` can be found in the [fbsd_gpio documentation](https://pypi.python.org/pypi/fbsd_gpio/0.4.0) on PyPI.*
 
 ### 3. Work with APA102 LEDs
 
-Now we've set up the SPI functions and ready to send SPI data, but what to send in order to light up any LEDs we want? Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf), we are able to find out the data format:
+Now we've set up the SPI functions and we're ready to send SPI data, but what to send in order to light up the LEDs we want? Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf) to find out the data format:
 
 ![APA102 Data Format](bbg_img/apa102_format.jpg)
 (image from https://cdn-shop.adafruit.com/datasheets/APA102.pdf)
 
-Each update consists of a start frame of 32 zeroes, 32 bits for every LED and an end frame of 32 ones. So our send function will most likely to work as follows:
+Each update consists of a start frame of 32 zeroes, 32 bits for every LED, and an end frame of 32 ones. So our send function will most likely to work as follows:
 
 ```python
 # Start Frame
@@ -307,7 +307,7 @@ JENKINS_URL = "https://ci.freebsd.org/api/python?tree=jobs[name,color]"
 data = ast.literal_eval(urllib.urlopen(JENKINS_URL).read())["jobs"]
 ```
 
-This is how data will look like:
+This is how the data will look like:
 
 ```python
 {
@@ -328,9 +328,9 @@ This is how data will look like:
 }
 ```
 
-So that each time we fetch this data and iterate through `data["jobs"]`, we are able to get the status from `color` attribute and store them in a dictionary called `status`.
+Each time we fetch this data and iterate through `data["jobs"]`, we are able to get the status from `color` attribute and store them in a dictionary called `status`.
 
-*The Jenkins API manual can be found [here](https://ci.freebsd.org/api/).*
+*The Jenkins API manual can be found in the [Jenkins CI API reference](https://ci.freebsd.org/api/).*
 
 ### 2. Light up the LEDs
 
@@ -390,9 +390,9 @@ if __name__ == "__main__":
 
 ### 3. Let them blink!
 
-Now the display works really well with the static states of the job. However, we notice that the `blue_anime` and `red_anime` colours in Jenkins, which indicate a project is in the process of building thus should be blinking, are treating as static status as well.
+Now the display works really well with the static states of the job. However, we notice that the `blue_anime` and `red_anime` colours in Jenkins, which indicate a project is in the process of building (and should be blinking), are treating as static status as well.
 
-How to blink the LEDs while keeping their current status? We add a `blink_flag` boolean inside the loop, reverse it each time, and decide if we should turn the lights off based on that.
+How can we blink the LEDs while keeping their current status? We add a `blink_flag` boolean inside the loop, reverse it each time, and decide if we should turn the lights off based on that.
 
 Add the flag to the LED updating loop:
 ```python
