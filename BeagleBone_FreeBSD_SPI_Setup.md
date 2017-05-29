@@ -477,4 +477,4 @@ Official BeagleBone Green Document: [BeagleBone Green](http://wiki.seeed.cc/Beag
 
 ## Thanks
 
-I would like to thank my supervisor Ed Maste for his guidance and support on my work. I would also like to thank Siva Mahadevan, my colleague and friend, for the useful help and suggestions.
+I would like to thank my supervisor [Ed Maste](https://twitter.com/ed_maste) for his guidance and support on my work. I would also like to thank [Siva Mahadevan](https://github.com/sivamahadevan), my colleague and friend, for the help and useful suggestions.
