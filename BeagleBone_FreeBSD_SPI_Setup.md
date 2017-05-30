@@ -20,7 +20,7 @@ This display is so useful that we wanted a physical version in our office to mon
 
 ### 1. Build or download a FreeBSD image
 
-To get started, you can download an image from the [FreeBSD Snapshot](https://download.freebsd.org/ftp/snapshots/ISO-IMAGES/) site with filename labeled as BeagleBone. In this case we download:
+To get started, you can download an image from the [FreeBSD Snapshot](https://download.freebsd.org/ftp/snapshots/ISO-IMAGES/) site with filename labeled as BeagleBone. In this case, we download:
 
 ```
 FreeBSD-12.0-CURRENT-arm-armv6-BEAGLEBONE-20170519-r318502.img.xz
@@ -64,15 +64,15 @@ After the operation finishes, you can insert the micro-SD card into the BeagleBo
 
 ### 1. Connect the serial cable
 
-A serial cable might not be necessary as you can wait until it boots and try to `ssh` to it (the system configuration might prevent you from logging in as root with `ssh` though). However, since BeagleBone Green doesn't have a HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something goes wrong.
-
-![Serial Header](bbg_img/serial_header.jpg)
+A serial cable might not be necessary as you can wait until it boots and try to `ssh` to it (the system configuration might prevent you from logging in as root with `ssh` though). However, since BeagleBone Green doesn't have an HDMI output, you can see what is going on through the whole booting process with a serial cable, making it much easier to diagnose if something goes wrong.
 
 The serial console of BeagleBone Green is exposed on a 6-pin header.
 
+![Serial Header](bbg_img/serial_header.jpg)
+
 ![Serial Connected](bbg_img/serial_connected.jpg)
 
-We use the built-in [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility for serial communications. `cu` can only access the /var/spool/lock directory via user `uucp` and group `dialer`. Use the dialer group to control who has access to the modem or remote systems by adding user accounts to dialer using [pw(8)](https://www.freebsd.org/cgi/man.cgi?query=pw&sektion=8):
+We use the built-in [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility for serial communications. `cu` can only access the `/var/spool/lock` directory via user `uucp` and group `dialer`. Use the `dialer` group to control who has access to the modem or remote systems by adding user accounts to `dialer` using [pw(8)](https://www.freebsd.org/cgi/man.cgi?query=pw&sektion=8):
 
 ```bash
 $ sudo pw groupmod dialer -m guangyuan # Use your own username
@@ -83,7 +83,7 @@ Then log out and log in again to make the above change live.
 Connect the USB to TTL cable to BeagleBone and computer, then run the `cu` utility and specify the line speed of 115200 baud.
 
 ```bash
-$ cu -s 115200 -l /dev/cuaU0 # Or appropriate tty device
+$ cu -s 115200 -l /dev/cuaU0 # Or appropriate device
 ```
 
 You won't see any output yet.
@@ -122,7 +122,7 @@ $ gpart set -a active -i 1 mmcsd1
 
 The system may refuse to proceed on some commands if the system clock is wrong.
 
-In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that ntpd will work with it. You can add the following to `/etc/rc.conf`:
+In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that `ntpd` will work with it. You can add the following to `/etc/rc.conf`:
 
 ```
 ntpd_enable="YES"
