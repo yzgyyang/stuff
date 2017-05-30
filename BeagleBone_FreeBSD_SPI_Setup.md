@@ -477,6 +477,8 @@ Official BeagleBone Green Document: [BeagleBone Green](http://wiki.seeed.cc/Beag
 
 [Understanding the APA102 “Superled”](https://cpldcpu.com/2014/11/30/understanding-the-apa102-superled/)
 
+[FreeBSD GPIO Benchmark](https://www.bidouilliste.com/blog/2016/04/22/FreeBSD-GPIO-Benchmark/)
+
 ## Thanks
 
 I would like to thank my supervisor [Ed Maste](https://twitter.com/ed_maste) for his guidance and support on my work. I would also like to thank [Siva Mahadevan](https://github.com/sivamahadevan), my colleague and friend, for the help and useful suggestions.
