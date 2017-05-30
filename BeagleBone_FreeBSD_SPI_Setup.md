@@ -214,7 +214,9 @@ GND -> DGND
 
 ### 2. Install Python development environment
 
-We use Python and the `fbsd_gpio` python bindings for the code. Install Python and `pip` first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
+[libgpio](https://www.freebsd.org/cgi/man.cgi?query=gpio&sektion=3) is an easy-to-use C library on FreeBSD. There exists a [CFFI-based Python binding](https://github.com/evadot/fbsd_gpio_py) for this library, and for other languages you can still call the system `gpioctl` utility as before (but it will be much slower compared to the C library).
+
+We use Python and the `fbsd_gpio` Python binding for the code. Install Python and `pip` first, and then `cffi` and `fbsd_gpio` libraries via PyPI.
 
 ```bash
 $ pkg install python py27-pip
