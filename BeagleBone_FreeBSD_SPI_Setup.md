@@ -6,7 +6,7 @@ FreeBSD now has a number of continuous integration jobs on Jenkins CI to build a
 
 ![Tinderbox Screenshot](bbg_img/tinderbox.jpg)
 
-This display is so useful that we wanted a physical version in our office to monitor the build status more easily. Started as a side project during my first few weeks of interning at The FreeBSD Foundation, it finally met our expectation to become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status, and is running 24/7 in our Kitchener office, proudly served on FreeBSD on a BeagleBone Green.
+This display is so useful that we wanted a physical version in our office to monitor the build status more easily. What started as a side project during my first few weeks of interning at The FreeBSD Foundation, has become a useful LED display of the current [FreeBSD CI](https://ci.freebsd.org/) (continuous integration) build status, and is running 24/7 in the Foundation Kitchener office, proudly running FreeBSD on a BeagleBone Green.
 
 ## Prerequisites
 
@@ -38,9 +38,9 @@ You can always choose to build FreeBSD from source code if you want to experienc
 
 ### 2. Install the image
 
-The [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&sektion=1) utility is used for raw data copying such as, in this case, initializing a disk from a raw image.
+The [dd(1)](https://www.freebsd.org/cgi/man.cgi?query=dd&sektion=1) utility is used for raw data copying such as, initializing a disk from a raw image.
 
-We specify `if` (input file), `of` (output file) and `bs` (copy block size). These arguments should be changed to match the actual file and device name.
+`dd` requires specifying `if` (input file), `of` (output file) and `bs` (copy block size). These arguments should be changed to match the actual file and device name.
 
 ```bash
 $ dd if=FreeBSD-BeagleBone.img of=/dev/da0 bs=8m
@@ -72,7 +72,7 @@ The serial console of BeagleBone Green is exposed on a 6-pin header.
 
 ![Serial Connected](bbg_img/serial_connected.jpg)
 
-We use the built-in [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility for serial communications. `cu` can only access the `/var/spool/lock` directory via user `uucp` and group `dialer`. Use the `dialer` group to control who has access to the modem or remote systems by adding user accounts to `dialer` using [pw(8)](https://www.freebsd.org/cgi/man.cgi?query=pw&sektion=8):
+The built-in [cu(1)](https://www.freebsd.org/cgi/man.cgi?query=cu&sektion=1) utility can be used for serial communications. `cu` can only access the `/var/spool/lock` directory via user `uucp` and group `dialer`. Use the `dialer` group to control who has access to the modem or remote systems by adding user accounts to `dialer` using [pw(8)](https://www.freebsd.org/cgi/man.cgi?query=pw&sektion=8):
 
 ```bash
 $ sudo pw groupmod dialer -m guangyuan # Use your own username
@@ -98,7 +98,7 @@ For more info about serial communications, see [FreeBSD Serial Communications](h
 
 ### 2. Boot up and log in
 
-The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card, and by default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, then apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
+The BeagleBone Black can boot from either the onboard eMMC or a micro-SD card. By default it boots from eMMC. To boot from micro-SD, first hold down the boot switch, then apply power. Don't release the button until you see it starts booting FreeBSD (or count to 5).
 
 ![BeagleBone Green Layout](bbg_img/bbg_layout.jpg)  
 (image from http://wiki.seeed.cc/BeagleBone_Green/)
@@ -107,8 +107,8 @@ The boot switch is just above the micro-SD slot.
 
 After booting, log in as root (the default password is "root" as well).
 
-*Tip: Making a BeagleBone Black always boot from the micro-SD  
-The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, we are able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
+*Tip: Making a BeagleBone Black Always Boot From the Micro-SD  
+The AM335x chip on board actually boots from the first partition that has the active flag set. After using the "holding the boot button" method described above to boot FreeBSD and log in as root, you will be able to turn off the bootable flag of the onboard eMMC to make it always boot from the micro-SD:*
 ```bash
 $ gpart unset -a active -i 1 mmcsd1
 ```
@@ -122,7 +122,7 @@ $ gpart set -a active -i 1 mmcsd1
 
 The system may refuse to proceed on some commands if the system clock is wrong.
 
-In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that `ntpd` will work with it. You can add the following to `/etc/rc.conf`:
+In FreeBSD, it is recommended to use both `ntpdate` and `ntpd`. `ntpdate` will set the clock when you first boot so it's close enough that `ntpd` will work with it. Add the following to `/etc/rc.conf`:
 
 ```
 ntpd_enable="YES"
@@ -176,7 +176,7 @@ Let's list all the available pins defined by device `/dev/gpioc0`:
 $ gpioctl -f /dev/gpioc0 -l
 ```
 
-By default, all the IO pins are set to be inputs. This is no good for our LED, we need the pin it is connected to be an output, so we configure that:
+By default, all the IO pins are set to be inputs. This does not work for our LED. Instead, we need the pin it is connected to be an output, so we configure that:
 ```bash
 $ gpioctl -f /dev/gpioc0 -c 3 OUT # Assuming pin 3 is the one used
 ```
@@ -199,14 +199,14 @@ You can try blinking the LED by writing a bash script with a simple loop.
 
 Awesome! GPIO is working well with BeagleBone, it's time to start using the addressible LED strip.
 
-The LED RGB strip we got is packed with 60 APA102s and can be controlled with a standard SPI interface. However, at this moment, FreeBSD has no userland support for SPI devices. We use [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a workaround.
+The LED RGB strip we used is packed with 60 APA102s and can be controlled with a standard SPI interface. However, at this moment, FreeBSD has no userland support for SPI devices. We used [Bit banging](https://en.wikipedia.org/wiki/Bit_banging) to simulate the [SPI Protocol](https://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus) as a workaround.
 
 ### 1. Wire LED strip to the BeagleBone
 
 ![](bbg_img/apa102_layout.jpg)  
 (image from https://www.sparkfun.com/products/14015)
 
-Using the pin map, we connect:  
+Using the pin map, we connected:  
 VCC -> SYS_5V  
 CI -> GPIO of your choice  
 DI -> GPIO of your choice  
@@ -227,7 +227,7 @@ $ pip install --user cffi fbsd_gpio
 ```
 unable to execute '/nxb-bin/usr/bin/cc': No such file or directory
 ```
-*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. It is a bug that has to be reported, but we could just change all references in `/usr/local/lib/python2.7/_sysconfigdata.py` for now as a workaround:*
+*This is because FreeBSD uses some cross-compile tools on some embedded platforms (mips, arm, aarch64, etc.) which aren’t used in this setup and will cause build errors. The bug has not been fixed yet ([Bug 208282](https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=208282)), but in the meantime, we could just change all references in `/usr/local/lib/python2.7/_sysconfigdata.py` as a workaround:*
 ```bash
 $ sed -i '' 's/\/nxb-bin\/usr\/bin\/cc/\/usr\/bin\/cc/g' /usr/local/lib/python2.7/_sysconfigdata.py
 ```
@@ -276,7 +276,7 @@ def spi_write(buf):
 
 ### 4. Work with APA102 LEDs
 
-Now we've set up the SPI functions and we're ready to send SPI data, but what to send in order to light up the LEDs we want? Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf) to find out the data format:
+Once we set up the SPI functions, we were ready to send SPI data, but first we needed to figure out what to send in order to light up the LEDs we want. Follow the [APA102 Manual](https://cdn-shop.adafruit.com/datasheets/APA102.pdf) to find out the data format:
 
 ![APA102 Data Format](bbg_img/apa102_format.jpg)  
 (image from https://cdn-shop.adafruit.com/datasheets/APA102.pdf)
@@ -302,7 +302,7 @@ Read this article if you want to [Understand the APA102 “Superled”](https://
 
 ### 1. Get data from Jenkins
 
-Many objects of Jenkins provide remote access APIs. We use the provided Python one to get status of all jobs:
+Many objects of Jenkins provide remote access APIs. We used the provided Python one to get status of all jobs:
 
 ```python
 import ast
@@ -332,13 +332,13 @@ This is how the data will look like:
 }
 ```
 
-Each time we fetch this data and iterate through `data["jobs"]`, we are able to get the status from `color` attribute and store them in a dictionary called `status`.
+And the latest status could be extracted from `color` attribute in `data["jobs"]` and stored in a dictionary called `status`.
 
 *The Jenkins API manual can be found in the [Jenkins CI API reference](https://ci.freebsd.org/api/).*
 
 ### 2. Light up the LEDs
 
-Recall the APA102 data format, we write some predefined data frames:
+Recalling the APA102 data format, we wrote some predefined data frames:
 ```python
 # Variables
 BRT = 224 + 16 # Brightness, 0~31 decimal
@@ -381,7 +381,7 @@ def led_send_all(jobs):
     led_send_end()
 ```
 
-so that once we updated the `status` dictionary, we are able to use `led_send(status)` to update the display:
+so that once we updated the `status` dictionary, we were able to use `led_send(status)` to update the display:
 
 ```python
 if __name__ == "__main__":
@@ -394,9 +394,9 @@ if __name__ == "__main__":
 
 ### 3. Let them blink!
 
-Now the display works really well with the static states of the job. However, we notice that the `blue_anime` and `red_anime` colours in Jenkins, which indicate a project is in the process of building (and should be blinking), are treating as static status as well.
+Now the display works really well with the static states of the job. However, we noticed that the `blue_anime` and `red_anime` colours in Jenkins, which indicate a project is in the process of building (and should be blinking), were treated as static status in the code.
 
-How can we blink the LEDs while keeping their current status? We add a `blink_flag` boolean inside the loop, reverse it each time, and decide if we should turn the lights off based on that.
+How can we make the LEDs blink while keeping their current status? We added a `blink_flag` boolean inside the loop, reversed it each time, and decided if we should turn the lights off based on that.
 
 Add the flag to the LED updating loop:
 ```python
@@ -423,7 +423,7 @@ def led_send_all(jobs, blink_flag):
     led_send_end()
 ```
 
-We should consider splitting the data fetching and the LED updating process, since blinking requires updating the LEDs every 0.5s but fetching data should be every 20s or even longer. This could be achieved by simply adding a nested loop (for example, 40 led updates, 1 data updates, loop), but I chose to use threading so both jobs will not affect each other if one gets stuck.
+We considered splitting the data fetching and the LED updating process, since blinking requires updating the LEDs every 0.5s, but fetching data should be every 20s or even longer. This could be achieved by simply adding a nested loop (for example, 40 led updates, 1 data updates, loop), but I chose to use threading so both jobs will not affect each other if one gets stuck.
 
 Move the LED updating process into a controller class and run it separately:
 ```python
@@ -450,7 +450,7 @@ And the LEDs should be able to blink at an interval of 0.5s.
 
 ## Add some final touches
 
-We cut the strip to parts and stick them inside a picture frame.
+We cut the strip to parts and stuck them inside a picture frame.
 
 ![](bbg_img/finish_1.jpg)
 
