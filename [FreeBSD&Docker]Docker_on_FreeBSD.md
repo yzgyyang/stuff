@@ -9,9 +9,11 @@ Docker may be the most popular container platform right now, but it's far from t
 
 ## Containerization and Virtualization on FreeBSD
 
-FreeBSD Jails
-bhyve
-(Pack and distribution systems for FreeBSD Jails Possible?)
+### FreeBSD Jails
+
+### bhyve
+
+### (Pack and distribution systems for FreeBSD Jails Possible?)
 
 ## Docker Implementations on FreeBSD
 
@@ -32,5 +34,9 @@ What FreeNAS Corral (10) uses and what FreeNAS 11 will use.
 Fewer choice, fully-functional (no better than Jails?)
 
 ## Analysis
+
+### Performance
+
+### Use Cases
 
 ## Concluding Remarks
