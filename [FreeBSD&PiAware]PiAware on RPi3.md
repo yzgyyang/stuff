@@ -1,20 +1,39 @@
 # Running PiAware on FreeBSD on a Raspberry Pi
 
-## dump1090
+## Introduction
 
-There's no real kernel code required for it - all of the rtl-sdr code just uses the generic USB userland API which is shared between many operating systems.
+[FlightAware](http://flightaware.com/live/) is a website that offers free flight tracking of aircrafts around the world in real-time. It relies on a huge network of ADS-B receivers.
+
+PiAware is one of these node.
+
+FlightAware uses FreeBSD to run many components of the system.  
+
+This is a proof-of-concept experiment of FreeBSD in embedded applications.
+
+## Prerequisites
+
+- A USB RTL-SDR and ADS-B receiver set with antenna
+- A working installation of FreeBSD
+- A Raspberry Pi 3 with a 4GB micro-SD card, a serial cable and Internet connection, running FreeBSD
+
+# Spot nearby aircrafts
+
+Packages are already available for RTL-SDR. No kernel code is required, since all code just uses the generic USB userland API which is shared between many operating systems.
 
 ```
 pkg install rtl-sdr
 ```
 
-Then, using it to test ADSB is pretty easy:
+Then, use it to test ADSB:
 
 ```
 rtl_adsb -V -S
 ```
 
-You will see tons of short packets received from nearby aircrafts.
+You will see tons of short packets received from nearby aircrafts, that means the receiver is working properly.
+```
+
+```
 
 With dump1090, these packets can be decoded and displayed nicely on a graphical interface:
 ```
@@ -25,7 +44,7 @@ dump1090 --net --aggressive
 
 Point a webserver at http://localhost:8080/ and watch!
 
-## PiAware
+# Set up PiAware
 
 Some dependencies:
 ```
