@@ -1,19 +1,31 @@
+# Running PiAware on FreeBSD on a Raspberry Pi
+
 Some dependencies:
 ```
-pkg install git autoconf cmake gmake pkgconf python3
+pkg install git autoconf cmake gmake pkgconf python3 openssl
 ```
 
-Install tcllauncher:
+Install tcllauncher and tcl libraries:
 ```
-pkg install tcllauncher
+pkg install tcllauncher tclsh86 itcl tcllib tcltls
+chmod a+x /usr/local/bin/tcllauncher
+chmod a+x /usr/local/bin/tclsh8.6
 ```
 
-Build dump1090 dependency: [bladeRF](https://github.com/Nuand/bladeRF)
+Install piaware:
+```
+git clone https://github.com/flightaware/piaware
+cd piaware
+gmake install
+```
+
+Build dump1090 dependency: [bladeRF](https://github.com/Nuand/bladeRF)  
 You can also see the [Detailed Guide from Official Wiki](https://github.com/Nuand/bladeRF/wiki/Getting-Started%3A-Linux#Building_bladeRF_libraries_and_tools_from_source)
 ```
 pw add group bladerf
 pw groupmod bladerf -m root
 ```
+Check if root is in the group bladerf now:
 ```
 groups
 ```
